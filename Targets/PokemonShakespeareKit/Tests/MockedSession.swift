@@ -18,3 +18,9 @@ struct MockedSession: DataTaskPublisherSession {
     self._anyDataTaskPublisher(request)
   }
 }
+
+extension MockedSession {
+  static var unimplemented: Self {
+    return .init { _ in fatalError() }
+  }
+}

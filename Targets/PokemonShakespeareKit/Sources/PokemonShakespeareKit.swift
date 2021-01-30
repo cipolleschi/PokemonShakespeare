@@ -14,10 +14,10 @@ import SwiftUI
 /// Main object that exposes all the API that are needed by PokemonShakespeare
 /// The struct exposes both method to obtain raw data and method to obtain UIComponents
 public struct PokemonShakespeareKit {
-  var _description: (_ pokemon: String) -> AnyPublisher<String, KitError>
-  var _availablePokemon: () throws -> AnyPublisher<[String], KitError>
-  var _sprite: (_ pokemon: String) throws -> AnyPublisher<URL?, KitError>
-  var _originalArtwork: (_ pokemon: String) throws -> AnyPublisher<URL?, KitError>
+  private var _description: (_ pokemon: String) -> AnyPublisher<String, KitError>
+  private var _availablePokemon: () throws -> AnyPublisher<[String], KitError>
+  private var _sprite: (_ pokemon: String) throws -> AnyPublisher<URL?, KitError>
+  private var _originalArtwork: (_ pokemon: String) throws -> AnyPublisher<URL?, KitError>
 }
 
 extension PokemonShakespeareKit {

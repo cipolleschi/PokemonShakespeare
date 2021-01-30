@@ -8,18 +8,23 @@
 
 import Foundation
 
-public enum KitError: Error {
-  case networkError(Error)
+public enum KitError: Error, Equatable {
+  case networkError(URLError)
   case invalidURL(String)
   case invalidQueryText(String)
   case descriptionNotFound(String)
   case invalidTranslation
+  case pokemonNotFound
 }
 
 extension KitError {
   static func from(error: PokemonManager.Error) -> Self {
     switch error {
     case .networkError(let err):
+      if err.code == .unknown && err.userInfo.isEmpty {
+        return .pokemonNotFound
+      }
+
       return .networkError(err)
     case .invalidURL(let url):
       return .invalidURL(url)

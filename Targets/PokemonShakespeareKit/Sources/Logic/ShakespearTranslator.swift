@@ -10,21 +10,10 @@ import Foundation
 import Combine
 
 struct ShakespeareTranslator {
-  enum Error: Swift.Error { //, CustomDebugStringConvertible {
+  enum Error: Swift.Error {
     case invalidURL(String)
     case invalidQueryText(String)
-    case networkError(Swift.Error)
-
-//    var debugDescription: String {
-//      switch self {
-//      case .invalidURL(let url):
-//        return "Invalid URL: \(url)"
-//      case .invalidQueryText(let query):
-//        return "Invalid Query: \(query)"
-//      case .networkError(let error):
-//        return "Network error \(error)"
-//      }
-//    }
+    case networkError(URLError)
   }
 
   private init(_translation: @escaping (_ for: String) throws -> AnyPublisher<String, Error>) {
@@ -85,8 +74,19 @@ extension ShakespeareTranslator {
         .map(\.data)
         .decode(type: FuntranslationResult.self, decoder: JSONDecoder())
         .map(\.contents.translated)
-        .mapError(Error.networkError)
+        .mapError{ error in
+          let urlError = error as? URLError ?? URLError(.unknown, userInfo: ["error": error])
+          return ShakespeareTranslator.Error.networkError(urlError)
+        }
         .eraseToAnyPublisher()
     }
   }
 }
+
+#if DEBUG
+extension ShakespeareTranslator {
+  static var unimplemented: Self {
+    return .init(_translation: { _ in fatalError() })
+  }
+}
+#endif

@@ -11,7 +11,7 @@ import Combine
 
 struct PokemonManager {
   enum Error: Swift.Error {
-    case networkError(Swift.Error)
+    case networkError(URLError)
     case invalidURL(String)
   }
 
@@ -51,7 +51,7 @@ extension PokemonManager {
 
       guard namesCache.isEmpty else {
         return Deferred { Just(namesCache) }
-          .mapError { error in PokemonManager.Error.networkError(error) }
+          .mapError { error in PokemonManager.Error.networkError(URLError(.unknown)) }
           .eraseToAnyPublisher()
       }
 
@@ -75,7 +75,7 @@ extension PokemonManager {
           namesCache = names
           return names
         }
-        .mapError(PokemonManager.Error.networkError)
+        .mapError(Self.handleNetworkError)
         .eraseToAnyPublisher()
 
     } _sprite: { pokemon in
@@ -130,7 +130,7 @@ extension PokemonManager {
             .replacingOccurrences(of: "\n", with: " ")
             .replacingOccurrences(of: "\u{c}", with: " ")
         }
-        .mapError(PokemonManager.Error.networkError)
+        .mapError(Self.handleNetworkError)
         .eraseToAnyPublisher()
     }
   }
@@ -142,8 +142,13 @@ extension PokemonManager {
     return Deferred {
       Just(cached[keyPath: keypath])
     }
-    .mapError { error in PokemonManager.Error.networkError(error) }
+    .mapError(Self.handleNetworkError)
     .eraseToAnyPublisher()
+  }
+
+  fileprivate static func handleNetworkError(_ error: Swift.Error) -> PokemonManager.Error {
+    let urlError: URLError = error as? URLError ?? URLError(.unknown, userInfo: ["error": error])
+    return PokemonManager.Error.networkError(urlError)
   }
 
   fileprivate static func pokemonRequest(
@@ -170,7 +175,7 @@ extension PokemonManager {
         cachingFunction($0)
         return $0[keyPath: keypath]
       }
-      .mapError(PokemonManager.Error.networkError)
+      .mapError(Self.handleNetworkError)
       .eraseToAnyPublisher()
   }
 }

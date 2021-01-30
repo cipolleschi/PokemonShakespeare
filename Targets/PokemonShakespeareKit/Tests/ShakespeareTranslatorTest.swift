@@ -64,12 +64,23 @@ class ShakespeareTranslatorTest: XCTestCase {
     case .invalidURL:
       XCTFail("Should receive a network error")
     case .networkError(let error):
-      guard let urlError = error as? URLError else {
-        XCTFail("Wrong error type")
-        return
-      }
-      XCTAssertEqual(urlError, expectedError)
+      XCTAssertEqual(error, expectedError)
     }
+  }
+
+  func test_empty_description() throws {
+    var receivedOutput: String? = nil
+    let exp = expectation(description: "Wait for network request")
+    try ShakespeareTranslator.live().translation(for: "")
+      .sink {
+        self.handle(completion: $0, exp: exp)
+      } receiveValue: { output in
+        receivedOutput = output
+      }
+      .store(in: &cancellables)
+
+    wait(for: [exp], timeout: 10)
+    XCTAssertEqual(receivedOutput, "")
   }
 
   // Integration tests are used to chekc that the code can actually invoke the service
