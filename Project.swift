@@ -25,6 +25,10 @@ let project = Project.app(
   platform: .iOS,
   additionalTargets: [
     Project.Framework(name: "PokemonShakespeareKit"),
-    Project.Framework(name: "PokemonShakespeareUI", dependencies: ["Kingfisher"])
+    Project.Framework(
+      name: "PokemonShakespeareUI",
+      dependencies: ["Kingfisher"],
+      testDependencies: ["SnapshotTesting"]
+    )
   ]
 )

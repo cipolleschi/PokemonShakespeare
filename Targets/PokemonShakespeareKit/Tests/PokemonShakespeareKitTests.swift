@@ -87,25 +87,6 @@ class PokemonShakespeareKitTests: XCTestCase {
   }
 
   // MARK: - Available Pokemon
-  func testAvailablePokemn() throws {
-    let names = ["Bulbasaur", "Ivysaur", "Venusaur"]
-    var receivedNames: [String]? = nil
-    let shakespeareKit = PokemonShakespeareKit.live(
-      pokemonManager: PokemonManager.live(session: MockedSession.namesSession(names: names)),
-      shakespeareTranslator: ShakespeareTranslator.unimplemented
-    )
-
-    let exp = expectation(description: "Wait for publisher")
-    try shakespeareKit.availablePokemon()
-      .sink { self.handle(completion: $0, exp: exp) } receiveValue: {
-        receivedNames = $0
-      }
-      .store(in: &self.cancellables)
-    wait(for: [exp], timeout: 1)
-    let unwrappedNames = try XCTUnwrap(receivedNames)
-    XCTAssertEqual(names, unwrappedNames)
-  }
-
   func testPokemnSprite() throws {
 
     let shakespeareKit = PokemonShakespeareKit.live(
@@ -114,7 +95,7 @@ class PokemonShakespeareKitTests: XCTestCase {
     )
     var receivedSpriteURL: URL? = nil
     let exp = expectation(description: "Wait for publisher")
-    try shakespeareKit.sprite(for: "Pikachu")
+    shakespeareKit.sprite(for: "Pikachu")
       .sink { self.handle(completion: $0, exp: exp) } receiveValue: {
         receivedSpriteURL = $0
       }
@@ -131,7 +112,7 @@ class PokemonShakespeareKitTests: XCTestCase {
     )
     var receivedArtworkURL: URL? = nil
     let exp = expectation(description: "Wait for publisher")
-    try shakespeareKit.originalArtwork(for: "Pikachu")
+    shakespeareKit.originalArtwork(for: "Pikachu")
       .sink { self.handle(completion: $0, exp: exp) } receiveValue: {
         receivedArtworkURL = $0
       }

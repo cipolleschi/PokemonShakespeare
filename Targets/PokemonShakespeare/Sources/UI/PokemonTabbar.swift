@@ -7,15 +7,53 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
-struct Tabbar: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+struct PokemonTabbar: View {
+  let store: Store<AppState, AppAction>
+
+  var body: some View {
+    WithViewStore(self.store) { viewStore in
+      TabView {
+        Search(store: self.store)
+          .tabItem {
+            Image(systemName: "magnifyingglass.circle")
+            Text("Search")
+          }
+        Favourites(store: self.store)
+          .tabItem {
+            Image(systemName: "star")
+            Text("Favourites")
+          }
+      }
+      .font(.headline)
+      .sheet(
+          isPresented: viewStore.binding(
+            get: { $0.showPokemon },
+            send: AppAction.dismissPokemon
+          )
+        ) {
+          PokemonView(store: self.store)
+        }
+      .alert(
+        item: viewStore.binding(
+          get: { $0.searchError.map {
+            AlertModel(message: $0)
+          }},
+          send: AppAction.cleanupError
+        ),
+        content: { model in
+          return Alert(
+            title: Text("Error"),
+            message: Text(model.message))
+        })
     }
+  }
 }
 
-struct Tabbar_Previews: PreviewProvider {
-    static var previews: some View {
-        Tabbar()
-    }
+struct AlertModel: Identifiable {
+  let message: String
+  var id: String {
+    return message
+  }
 }

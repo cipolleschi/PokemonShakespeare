@@ -10,6 +10,7 @@ import UIKit
 import SwiftUI
 import Kingfisher
 
+/// `SwiftUI` Full Screen `View` for a Pokemon
 public struct PokemonFullScreenSwiftUI: UIViewRepresentable {
   public typealias UIViewType = PokemonFullScreen
 
@@ -26,15 +27,35 @@ public struct PokemonFullScreenSwiftUI: UIViewRepresentable {
   }
 }
 
-public struct PokemonVM {
+/// View model to create a `Pokemon` full screen view
+public struct PokemonVM: Equatable {
   let artworkURL: URL?
   let artworkLoadingImage: UIImage
-  let name: String
+  public let name: String
   let description: String
+
+  /// Public initializer
+  ///
+  /// - parameter artworkURL: the url of the pokemon's artwork
+  /// - parameter artworkLoadingImage: an image that is displayed while loading the url.
+  /// - parameter name: the name of the pokemon
+  /// - parameter description: the description of the pokemon
+  public init(
+    artworkURL: URL?,
+    artworkLoadingImage: UIImage,
+    name: String,
+    description: String
+  ) {
+    self.artworkURL = artworkURL
+    self.artworkLoadingImage = artworkLoadingImage
+    self.name = name
+    self.description = description
+  }
 }
 
+/// A `UIView` to render the pokemon full screen.
 public class PokemonFullScreen: UIView {
-  var viewModel: PokemonVM? {
+  public var viewModel: PokemonVM? {
     didSet {
       self.update(oldModel: oldValue)
     }

@@ -8,19 +8,19 @@
 
 import Foundation
 import Combine
-import UIKit
-import SwiftUI
 
 /// Main object that exposes all the API that are needed by PokemonShakespeare
 /// The struct exposes both method to obtain raw data and method to obtain UIComponents
 public struct PokemonShakespeareKit {
   private var _description: (_ pokemon: String) -> AnyPublisher<String, KitError>
-  private var _availablePokemon: () throws -> AnyPublisher<[String], KitError>
-  private var _sprite: (_ pokemon: String) throws -> AnyPublisher<URL?, KitError>
-  private var _originalArtwork: (_ pokemon: String) throws -> AnyPublisher<URL?, KitError>
+  private var _sprite: (_ pokemon: String) -> AnyPublisher<URL?, KitError>
+  private var _originalArtwork: (_ pokemon: String) -> AnyPublisher<URL?, KitError>
 }
 
 extension PokemonShakespeareKit {
+
+  /// Default implementation of the `PokemonShakespeareKit` SDK.
+  /// Use this property to obtain a reference to the Service that is correctly initialized
   public static var live: Self {
     let pokemonManager = PokemonManager.live()
     let shakespearTranslator = ShakespeareTranslator.live()
@@ -35,71 +35,55 @@ extension PokemonShakespeareKit {
 
     return .init(
       _description: { pokemon in
-        do {
-          return try pokemonManager
-            .description(for: pokemon)
-            .mapError(KitError.from(error:))
-            .flatMap { description -> AnyPublisher<String, KitError> in
-              do {
-                return try shakespeareTranslator.translation(for: description ?? "")
-                  .mapError(KitError.from(error:))
-                  .eraseToAnyPublisher()
-              } catch {
-                if let err = error as? ShakespeareTranslator.Error {
-                  return Fail<String, KitError>(error: KitError.from(error: err)).eraseToAnyPublisher()
-                } else {
-                  return Fail<String, KitError>(error: .invalidTranslation).eraseToAnyPublisher()
-                }
-              }
-            }
-            .eraseToAnyPublisher()
-
-        } catch {
-          if let err = error as? PokemonManager.Error {
-            return Fail<String, KitError>(error: KitError.from(error: err)).eraseToAnyPublisher()
-          } else if let err = error as? PokemonManager.Error {
-            return Fail<String, KitError>(error: KitError.from(error: err)).eraseToAnyPublisher()
-          } else {
-            return Fail<String, KitError>(error: .invalidTranslation).eraseToAnyPublisher()
+        return pokemonManager
+          .description(for: pokemon)
+          .mapError(KitError.from(error:))
+          .flatMap { description -> AnyPublisher<String, KitError> in
+            return shakespeareTranslator.translation(for: description ?? "")
+              .mapError(KitError.from(error:))
+              .eraseToAnyPublisher()
           }
-        }
+          .eraseToAnyPublisher()
       },
-      _availablePokemon: {
-        return try pokemonManager
-          .pokemonNames()
+      _sprite: { pokemon in
+        return pokemonManager
+          .sprite(for: pokemon)
           .mapError(KitError.from(error:))
           .eraseToAnyPublisher()
       },
-    _sprite: { pokemon in
-      return try pokemonManager
-        .sprite(for: pokemon)
-        .mapError(KitError.from(error:))
-        .eraseToAnyPublisher()
-    },
-    _originalArtwork: { pokemon in
-      return try pokemonManager
-        .originalArtwork(for: pokemon)
-        .mapError(KitError.from(error:))
-        .eraseToAnyPublisher()
-    })
+      _originalArtwork: { pokemon in
+        return pokemonManager
+          .originalArtwork(for: pokemon)
+          .mapError(KitError.from(error:))
+          .eraseToAnyPublisher()
+      })
   }
 }
 
 // MARK: - Public Interface
 extension PokemonShakespeareKit {
+
+  /// Function that returns a publisher to obtain the description of a pokemon, already translated in Shapespeare language.
+  ///
+  /// - parameter pokemon: the name of the pokemon
+  /// - returns: a `Publisher<String, KitError>` that produces the description of the pokemon
   public func description(for pokemon: String) -> AnyPublisher<String, KitError> {
     return self._description(pokemon)
   }
 
-  public func availablePokemon() throws -> AnyPublisher<[String], KitError> {
-    return try self._availablePokemon()
+  /// Function that returns a sprite of a pokemon, given its name
+  ///
+  /// - parameter pokemon: the name of the pokemon
+  /// - returns: a `Publisher<URL, KitError>` that produces the url for pokemon's sprite
+  public func sprite(for pokemon: String) -> AnyPublisher<URL?, KitError> {
+    return self._sprite(pokemon)
   }
 
-  public func sprite(for pokemon: String) throws -> AnyPublisher<URL?, KitError> {
-    return try self._sprite(pokemon)
-  }
-
-  public func originalArtwork(for pokemon: String) throws -> AnyPublisher<URL?, KitError> {
-    return try self._originalArtwork(pokemon)
+  /// Function that returns the artwork of a pokemon, given its name
+  ///
+  /// - parameter pokemon: the name of the pokemon
+  /// - returns: a `Publisher<URL, KitError>` that produces the url for pokemon's artwork
+  public func originalArtwork(for pokemon: String) -> AnyPublisher<URL?, KitError> {
+    return self._originalArtwork(pokemon)
   }
 }

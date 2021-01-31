@@ -10,6 +10,7 @@ import UIKit
 import SwiftUI
 import Kingfisher
 
+/// `SwiftUI` Cell for a Pokemon
 public struct PokemonCellSwiftUI: UIViewRepresentable {
   public typealias UIViewType = PokemonCell
 
@@ -27,16 +28,34 @@ public struct PokemonCellSwiftUI: UIViewRepresentable {
   }
 }
 
+/// View model to create a `PokemonCell`
 public struct PokemonCellVM {
   let name: String
   let spriteURL: URL?
   let spriteLoadingImage: UIImage
+
+
+  /// Public initializer
+  ///
+  /// - parameter name: the name of the pokemon
+  /// - parameter spriteURL: the url of the pokemon's sprite
+  /// - parameter spriteLoadingImage: an image that is displayed while loading the url.
+  public init(
+    name: String,
+    spriteURL: URL?,
+    spriteLoadingImage: UIImage
+  ) {
+    self.name = name
+    self.spriteURL = spriteURL
+    self.spriteLoadingImage = spriteLoadingImage
+  }
 }
 
+/// A `UITableViewCell` to render a Pokemon
 public class PokemonCell: UITableViewCell {
   static let reuseIdentifier: String = "\(PokemonCell.self)"
 
-  var viewModel: PokemonCellVM? {
+  public var viewModel: PokemonCellVM? {
     didSet {
       self.update(oldModel: oldValue)
     }

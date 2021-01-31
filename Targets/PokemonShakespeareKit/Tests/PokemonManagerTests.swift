@@ -22,60 +22,6 @@ class PokemonManagerTests: XCTestCase {
     cancellables.forEach { $0.cancel() }
   }
 
-  // MARK: - Test Names
-  func test_names_are_returned() throws {
-    let nameList = ["bulbasaur", "ivysaur", "venusaur"]
-    var receivedNames: [String] = []
-    let exp = expectation(description: "wait for network request")
-    try PokemonManager.live(session: MockedSession.namesSession(names: nameList))
-      .pokemonNames()
-      .sink {
-        self.handle(completion: $0, exp: exp)
-      } receiveValue: { result in
-        receivedNames = result
-      }.store(in: &self.cancellables)
-
-    wait(for: [exp], timeout: 10)
-    XCTAssertEqual(receivedNames.count, 3)
-    XCTAssertEqual(nameList, receivedNames)
-  }
-
-  func test_names_are_cached() throws {
-    let nameList = ["bulbasaur", "ivysaur", "venusaur"]
-    var receivedNames: [String] = []
-    let exp = expectation(description: "wait for network request")
-
-    let session = MockedSession.secondCallFailing(from: MockedSession.namesSession(names: nameList))
-    let pokemonManager = PokemonManager.live(session: session)
-
-    try pokemonManager
-      .pokemonNames()
-      .sink {
-        self.handle(completion: $0, exp: exp)
-      } receiveValue: { result in
-        receivedNames = result
-      }.store(in: &self.cancellables)
-
-    wait(for: [exp], timeout: 10)
-
-    XCTAssertEqual(receivedNames.count, 3)
-    XCTAssertEqual(nameList, receivedNames)
-
-    let exp2 = expectation(description: "wait for second network request")
-    try pokemonManager
-      .pokemonNames()
-      .sink {
-        self.handle(completion: $0, exp: exp2)
-      } receiveValue: { result in
-        receivedNames = result
-      }.store(in: &self.cancellables)
-
-    wait(for: [exp2], timeout: 1)
-
-    XCTAssertEqual(receivedNames.count, 3)
-    XCTAssertEqual(nameList, receivedNames)
-  }
-
   // MARK: - Test Sprite
   func test_sprite_is_returned() throws {
     let urlString1 = "https://pokeapi.co/"
@@ -92,7 +38,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedURL: URL? = nil
 
     let exp = expectation(description: "wait for network request")
-    try PokemonManager.live(session: MockedSession.pokemonSession(pokemon: pokemon))
+    PokemonManager.live(session: MockedSession.pokemonSession(pokemon: pokemon))
       .sprite(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -123,7 +69,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedURL: URL? = nil
 
     let exp = expectation(description: "wait for network request")
-    try pokemonManager
+    pokemonManager
       .sprite(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -135,7 +81,7 @@ class PokemonManagerTests: XCTestCase {
     XCTAssertEqual(receivedURL?.absoluteString, urlString1)
 
     let exp2 = expectation(description: "wait for network request")
-    try pokemonManager
+    pokemonManager
       .originalArtwork(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp2)
@@ -163,7 +109,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedURL: URL? = nil
 
     let exp = expectation(description: "wait for network request")
-    try PokemonManager.live(session: MockedSession.pokemonSession(pokemon: pokemon))
+    PokemonManager.live(session: MockedSession.pokemonSession(pokemon: pokemon))
       .originalArtwork(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -194,7 +140,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedURL: URL? = nil
 
     let exp = expectation(description: "wait for network request")
-    try pokemonManager
+    pokemonManager
       .originalArtwork(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -206,7 +152,7 @@ class PokemonManagerTests: XCTestCase {
     XCTAssertEqual(receivedURL?.absoluteString, urlString2)
 
     let exp2 = expectation(description: "wait for network request")
-    try pokemonManager
+    pokemonManager
       .sprite(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp2)
@@ -224,7 +170,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedText: String? = nil
 
     let exp = expectation(description: "wait for network request")
-    try PokemonManager.live(session: MockedSession.pokemonDescription(description: description))
+    PokemonManager.live(session: MockedSession.pokemonDescription(description: description))
       .description(for: "pikachu")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -237,29 +183,11 @@ class PokemonManagerTests: XCTestCase {
   }
 
   // MARK: - Integration
-  func test_names_integration() throws {
-    var nameList: [String] = []
-
-    let exp = expectation(description: "wait for network request")
-    try PokemonManager.live()
-      .pokemonNames()
-      .sink {
-        self.handle(completion: $0, exp: exp)
-      } receiveValue: { result in
-        nameList = result
-      }.store(in: &self.cancellables)
-
-    wait(for: [exp], timeout: 10)
-    XCTAssertEqual(nameList.count, 1118)
-    XCTAssertEqual(nameList.first?.lowercased(), "bulbasaur")
-    XCTAssertEqual(nameList[150].lowercased(), "mew")
-  }
-
   func test_sprite_integration() throws {
     let expectedPath = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/12.png"
     var receivedURL: URL? = nil
     let exp = expectation(description: "wait for network request")
-    try PokemonManager.live()
+    PokemonManager.live()
       .sprite(for: "butterfree")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -278,7 +206,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedURL: URL? = nil
 
     let exp = expectation(description: "wait for network request")
-    try PokemonManager.live()
+    PokemonManager.live()
       .originalArtwork(for: "butterfree")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -299,7 +227,7 @@ class PokemonManagerTests: XCTestCase {
     var receivedText: String? = nil
 
     let exp = expectation(description: "wait for network request")
-    try PokemonManager.live()
+    PokemonManager.live()
       .description(for: "charizard")
       .sink {
         self.handle(completion: $0, exp: exp)
@@ -364,7 +292,11 @@ extension MockedSession {
       let encoder = JSONEncoder()
       encoder.keyEncodingStrategy = .convertToSnakeCase
       return Just((try! encoder.encode(pokemonSpecies), URLResponse()))
-        .mapError { _ in URLError(.unknown)}
+        .mapError { error in
+          print(error)
+          URLError(.unknown)
+
+        }
         .eraseToAnyPublisher()
     }
   }

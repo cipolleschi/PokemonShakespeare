@@ -14,16 +14,17 @@ struct ShakespeareTranslator {
     case invalidURL(String)
     case invalidQueryText(String)
     case networkError(URLError)
+    case rateLimitHit
   }
 
-  private init(_translation: @escaping (_ for: String) throws -> AnyPublisher<String, Error>) {
+  private init(_translation: @escaping (_ for: String) -> AnyPublisher<String, Error>) {
     self._translation = _translation
   }
 
-  private var _translation: (_ for: String) throws -> AnyPublisher<String, Error>
+  private var _translation: (_ for: String) -> AnyPublisher<String, Error>
 
-  func translation(for text: String) throws ->  AnyPublisher<String, Error> {
-    return try self._translation(text)
+  func translation(for text: String) ->  AnyPublisher<String, Error> {
+    return self._translation(text)
   }
 }
 
@@ -52,14 +53,14 @@ extension ShakespeareTranslator {
     return Self { text in
       // Input validation: query
       guard let urlEncodedText = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-        throw Error.invalidQueryText(text)
+        return Deferred { Fail(error: Error.invalidQueryText(text)) }.eraseToAnyPublisher()
       }
 
       let baseURLString = "https://api.funtranslations.com/translate/shakespeare.json?text=\(urlEncodedText)"
 
       // Input validation: URL
       guard let url = URL(string: baseURLString) else {
-        throw Error.invalidURL(baseURLString)
+        return Deferred { Fail(error: Error.invalidURL(baseURLString)) }.eraseToAnyPublisher()
       }
 
 
@@ -71,7 +72,20 @@ extension ShakespeareTranslator {
       // Once we have decoded the result, we can extract the translation.
       return session
         .anyDataTaskPublisher(for: urlRequest)
-        .map(\.data)
+        .tryMap { (data: Data, response: URLResponse) throws -> Data in
+          guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(URLError.Code.badServerResponse)
+          }
+
+          guard (200..<300) ~= httpResponse.statusCode else {
+            if httpResponse.statusCode == 429 {
+              throw ShakespeareTranslator.Error.rateLimitHit
+            }
+            throw URLError(URLError.Code.badServerResponse)
+          }
+
+          return data
+        }
         .decode(type: FuntranslationResult.self, decoder: JSONDecoder())
         .map(\.contents.translated)
         .mapError{ error in

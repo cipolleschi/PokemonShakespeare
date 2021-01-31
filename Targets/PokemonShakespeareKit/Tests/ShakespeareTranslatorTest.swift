@@ -26,7 +26,7 @@ class ShakespeareTranslatorTest: XCTestCase {
     let expectedResult = "This is a translation"
     var obtainedResult: String? = nil
     let exp = expectation(description: "Wait for network request")
-    try ShakespeareTranslator.live(session: MockedSession.alwaysSuccessful(expectedResult: expectedResult))
+    ShakespeareTranslator.live(session: MockedSession.alwaysSuccessful(expectedResult: expectedResult))
       .translation(for: expectedResult)
       .sink { self.handle(completion: $0, exp: exp) } receiveValue: {
         obtainedResult = $0
@@ -41,7 +41,7 @@ class ShakespeareTranslatorTest: XCTestCase {
     let expectedError: URLError = URLError(URLError.Code.badURL)
     var obtainedResult: ShakespeareTranslator.Error? = nil
     let exp = expectation(description: "Wait for network request")
-    try ShakespeareTranslator.live(session: MockedSession.alwaysFailing(expectedError: expectedError))
+    ShakespeareTranslator.live(session: MockedSession.alwaysFailing(expectedError: expectedError))
       .translation(for: "This is a translation")
       .sink { completion in
         switch completion {
@@ -65,13 +65,51 @@ class ShakespeareTranslatorTest: XCTestCase {
       XCTFail("Should receive a network error")
     case .networkError(let error):
       XCTAssertEqual(error, expectedError)
+    case .rateLimitHit:
+      XCTFail("Should receive a network error")
     }
+  }
+
+  func test_failure_whenRateLimit() throws {
+    let description = "a description"
+    let expectedError = URLError(.unknown, userInfo: ["error":  ShakespeareTranslator.Error.rateLimitHit])
+    var receivedError: ShakespeareTranslator.Error? = nil
+    let exp = expectation(description: "Wait for network request")
+    ShakespeareTranslator.live(session: MockedSession.alwaysFailing(expectedError: expectedError) )
+      .translation(for: description)
+      .sink { completion in
+        switch completion {
+        case .failure(let error):
+          receivedError = error
+          exp.fulfill()
+        case .finished:
+          XCTFail("Publisher should not finish")
+        }
+      } receiveValue: { _ in
+        XCTFail("Should not reach this point")
+      }.store(in: &cancellables)
+    wait(for: [exp], timeout: 10)
+
+    let unwrappedError = try XCTUnwrap(receivedError)
+    switch unwrappedError {
+    case .networkError(let urlError):
+      let unwrapped = try XCTUnwrap(urlError.userInfo["error"] as? ShakespeareTranslator.Error)
+      switch unwrapped {
+      case .rateLimitHit:
+        XCTAssertTrue(true)
+      default:
+        XCTFail("Received an error of the wrong type")
+      }
+    default:
+      XCTFail("Received an error of the wrong type")
+    }
+
   }
 
   func test_empty_description() throws {
     var receivedOutput: String? = nil
     let exp = expectation(description: "Wait for network request")
-    try ShakespeareTranslator.live().translation(for: "")
+    ShakespeareTranslator.live().translation(for: "")
       .sink {
         self.handle(completion: $0, exp: exp)
       } receiveValue: { output in
@@ -94,7 +132,7 @@ class ShakespeareTranslatorTest: XCTestCase {
     let exp = expectation(description: "Wait for network request")
 
     // Act
-    try ShakespeareTranslator.live().translation(for: query)
+    ShakespeareTranslator.live().translation(for: query)
       .sink(receiveCompletion: { self.handle(completion: $0, exp: exp) }) {
         received = $0
       }
@@ -134,7 +172,7 @@ extension MockedSession {
 
     return Self { _ in
       return Deferred {
-        Just((data: try! JSONEncoder().encode(toRet), response: URLResponse()))
+        Just((data: try! JSONEncoder().encode(toRet), response: HTTPURLResponse()))
       }
       .mapError { _ in URLError(.unknown)} // mapping Never will never be executed. This is required to match the signatures
       .eraseToAnyPublisher()
@@ -144,7 +182,7 @@ extension MockedSession {
   static func alwaysFailing(expectedError: URLError) -> Self {
     return Self { _ in
       return Deferred {
-        Just((data: "This should never be read".data(using: .utf8), response: URLResponse()))
+        Just((data: "This should never be read".data(using: .utf8), response: HTTPURLResponse()))
       }
       .tryMap { _ in throw expectedError}
       .mapError { $0 as! URLError }

@@ -15,28 +15,22 @@ struct PokemonManager {
     case invalidURL(String)
   }
 
-  private var _pokemonNames: () throws -> AnyPublisher<[String], Error>
+  private var _sprite: (String) -> AnyPublisher<URL?, Error>
 
-  private var _sprite: (String) throws -> AnyPublisher<URL?, Error>
+  private var _originalArtwork: (String) -> AnyPublisher<URL?, Error>
 
-  private var _originalArtwork: (String) throws -> AnyPublisher<URL?, Error>
+  private var _description: (String) -> AnyPublisher<String?, Error>
 
-  private var _description: (String) throws -> AnyPublisher<String?, Error>
-
-  func pokemonNames() throws -> AnyPublisher<[String], Error> {
-    try self._pokemonNames()
+  func sprite(for pokemon: String) -> AnyPublisher<URL?, Error> {
+    self._sprite(pokemon)
   }
 
-  func sprite(for pokemon: String) throws -> AnyPublisher<URL?, Error> {
-    try self._sprite(pokemon)
+  func originalArtwork(for pokemon: String) -> AnyPublisher<URL?, Error> {
+    self._originalArtwork(pokemon)
   }
 
-  func originalArtwork(for pokemon: String) throws -> AnyPublisher<URL?, Error> {
-    try self._originalArtwork(pokemon)
-  }
-
-  func description(for pokemon: String) throws -> AnyPublisher<String?, Error> {
-    try self._description(pokemon)
+  func description(for pokemon: String) -> AnyPublisher<String?, Error> {
+    self._description(pokemon)
   }
 }
 
@@ -44,47 +38,15 @@ struct PokemonManager {
 extension PokemonManager {
   static func live(session: DataTaskPublisherSession = URLSession.shared) -> Self {
     let baseUrl = "https://pokeapi.co/api/v2/"
-    var namesCache: [String] = []
     var pokemonCache: [String: Pokemon] = [:]
 
-    return .init {
-
-      guard namesCache.isEmpty else {
-        return Deferred { Just(namesCache) }
-          .mapError { error in PokemonManager.Error.networkError(URLError(.unknown)) }
-          .eraseToAnyPublisher()
-      }
-
-
-      // 2000 to avoid pagination and be resilient to further pokemon addition
-      // the proper approach would be to use pagination and ask for a fixed number of pokemon
-      // and query them using the limit and the offset parameters.
-      // Given that the pokemon are a finite amount, that the api returns a list where each pokemon is
-      // represented with only a couple of field, it is more practical that we ask for all the pokemon
-      // in a single call.
-      let path = "pokemon?limit=2000"
-      let url = URL(string: "\(baseUrl)\(path)")!
-
-      let request = URLRequest(url: url)
-      return session
-        .anyDataTaskPublisher(for: request)
-        .map(\.data)
-        .decode(type: PokemonList.self, decoder: JSONDecoder())
-        .map { result in
-          let names = result.results.map(\.name)
-          namesCache = names
-          return names
-        }
-        .mapError(Self.handleNetworkError)
-        .eraseToAnyPublisher()
-
-    } _sprite: { pokemon in
+    return .init { pokemon in
 
       if let cached = pokemonCache[pokemon] {
         return Self.cachedPokemonRepresentation(from: cached, keypath: \.sprites.frontDefault)
       }
 
-      return try pokemonRequest(
+      return pokemonRequest(
         for: pokemon,
         baseUrl: URL(string: baseUrl)!,
         session: session,
@@ -99,7 +61,7 @@ extension PokemonManager {
         return Self.cachedPokemonRepresentation(from: cached, keypath: \.sprites.other.officialArtwork.frontDefault)
       }
 
-      return try pokemonRequest(
+      return pokemonRequest(
         for: pokemon,
         baseUrl: URL(string: baseUrl)!,
         session: session,
@@ -157,7 +119,7 @@ extension PokemonManager {
     session: DataTaskPublisherSession,
     keypath: KeyPath<Pokemon, URL?>,
     cachingFunction: @escaping (Pokemon) -> ()
-  ) throws -> AnyPublisher<URL?, PokemonManager.Error> {
+  ) -> AnyPublisher<URL?, PokemonManager.Error> {
 
     let path = "pokemon/\(pokemon)"
     let url = baseUrl.appendingPathComponent(path)

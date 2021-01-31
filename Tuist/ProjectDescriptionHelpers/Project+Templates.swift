@@ -20,16 +20,32 @@ extension Project {
   }
   /// Helper function to create the Project for this ExampleApp
   public static func app(name: String, platform: Platform, additionalTargets: [Framework]) -> Project {
-    var targets = makeAppTargets(name: name,
-                                 platform: platform,
-                                 dependencies: additionalTargets.map { TargetDependency.target(name: $0.name) })
+    var targets = makeAppTargets(
+      name: name,
+      platform: platform,
+      dependencies:
+        [TargetDependency.package(product: "ComposableArchitecture")] +
+        additionalTargets.map { TargetDependency.target(name: $0.name) })
     targets += additionalTargets.flatMap({ makeFrameworkTargets(framework: $0, platform: platform) })
-    return Project(name: name,
-                   organizationName: "tuist.io",
-                   packages: [
-                    .remote(url: "https://github.com/onevcat/Kingfisher.git", requirement: .upToNextMajor(from: "6.0.0"))
-                   ],
-                   targets: targets)
+    return Project(
+      name: name,
+      organizationName: "tuist.io",
+      packages: [
+        .remote(
+          url: "https://github.com/onevcat/Kingfisher.git",
+          requirement: .upToNextMajor(from: "6.0.0")
+        ),
+        .remote(
+          url: "https://github.com/pointfreeco/swift-snapshot-testing.git",
+          requirement: .upToNextMajor(from: "1.8.1")
+        ),
+        .remote(
+          url: "https://github.com/pointfreeco/swift-composable-architecture.git",
+          requirement: .upToNextMajor(from: "0.11.0")
+        )
+      ],
+      targets: targets
+    )
   }
 
   // MARK: - Private

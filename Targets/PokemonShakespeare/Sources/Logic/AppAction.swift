@@ -7,3 +7,15 @@
 //
 
 import Foundation
+import PokemonShakespeareUI
+import PokemonShakespeareKit
+
+enum AppAction: Equatable {
+  case searchPokemon(String)
+  case onPokemonFound(Result<Pokemon, KitError>)
+  case cleanupPokemonFound
+  case cleanupError
+  case changeFavourite(Pokemon)
+  case dismissPokemon
+  case dismissLoader
+}
