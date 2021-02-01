@@ -1,35 +1,35 @@
 # PokemonShakespeareUI
 
-This is a package which contains the UI to some components based on some pokemon inforamtions.  
+This is a package that contains the UI to some components based on some pokemon information.  
 The package has no other logic than UI visualization. You can use whatever content provider you prefer.
 
 ## Integration
 
 **Supported Versions:** iOS >= 14
 
-To integrate this libreary in an app, you can clone the project.   
-Once the porject has been cloned, just do the following:
+To integrate this library into an app, you can clone the project.   
+Once the project has been cloned, do the following:
 
 1. Click on `File` > `Swift Packages` > `Add Package Dependencies`
 2. In the textbox, type `file:///path/to/PokemonShakespeare/Targets/PokemonShakespeareUI` replacing `path/to` with the root directory where you have cloned the project.
-3. Click on next twice.
+3. Click on Next twice.
 
 Don't forget to add the dependency to your app:
 
 1. Click on the blue Xcode icon in the Project Navigator
-2. Select your app name, below the Target Panel.
+2. Select your app name below the Target Panel.
 3. In the General tab, scroll down to the `Framework, Libraries and Embedded Content` section
 4. Click on the `+` button
 5. Select the `PokemonShakespeareUI` target
 
-Now, you can use it in your app, by simply importing it.
+Now, you can use it in your app by simply importing it.
 
 ## Usage
 
-The library offer two components: a full screen component and a table view cell.  
+The library offers two components: a full-screen component and a table view cell.  
 The components can be used with both `SwiftUI` and `UIKit`.
 
-Each component comes with its own `ViewModel`. The MVVM pattern is enforced within the component, just set the new model and you are good to go.
+Each component comes with its own `ViewModel`. The MVVM pattern is enforced within the component, just set the new model, and you are good to go.
 
 ### FullScreen Component (UIKit)
 
@@ -90,8 +90,8 @@ struct AView: View {
 
 ### Provider
 
-The library comes also with a UIProvider that can be used as single interface to access the components.  
-The provider can be used in those cases where you need to retrieve the compoents but you don't care about their type.
+The library also comes with a UI provider that can be used as a single interface to access the components.  
+The provider can be used when you need to retrieve the components, but you don't care about their type.
 
 ```swift
 // Obtain a reference to the provider
