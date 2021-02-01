@@ -45,6 +45,17 @@ The pattern is taken from Redux and follows the principles of the Unidirectional
 * These `action`s are handled by the store through a `reducer`
 * The reducer can interact with the environment thanks to an `environment` struct, which can execute side effects and reinject actions in the store.
 
+#### Running the App
+
+To run the app, you can follow these steps:
+
+1. Clone the repository
+2. Run `tuist generate`
+3. Open the `PokemonShakespeare.xcworkspace`
+4. Select the `PokemonShakespeare` target in the list of targets
+5. Select a simulator
+6. Press on the `Play` button.
+
 ### PokemonShakespeareKit
 
 The logic library lets the app communicate with external services.
