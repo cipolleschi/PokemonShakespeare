@@ -7,43 +7,29 @@ This package has no UI, so you are not forced to use the `PokemonShakespeareUI` 
 
 **Supported versions:** iOS > 14; MacOS > 11.0 
 
-To integrate `PokemonShakespeareKit` you can use the Swift Package Manager (SPM).
+To integrate this library into an app, you can clone the project.   
+Once the project has been cloned, do the following:
 
-You can clone the project and then add the following lines:
+1. Click on `File` > `Swift Packages` > `Add Package Dependencies`
+2. In the textbox, type `file:///path/to/PokemonShakespeare/Targets/PokemonShakespeareKit` replacing `path/to` with the root directory where you have cloned the project.
+3. Click on Next twice.
 
-```swift
-dependencies: [
-  // ...
-  .package(path: "path/to/PokemonShakespeare/Targets/PokemonShakespeareKit")
-]
-```
+Don't forget to add the dependency to your app:
 
-And then, remember to add it as a dependenci of a target that needs it. For example:
+1. Click on the blue Xcode icon in the Project Navigator
+2. Select your app name below the Target Panel.
+3. In the General tab, scroll down to the `Framework, Libraries and Embedded Content` section
+4. Click on the `+` button
+5. Select the `PokemonShakespeareKit` target
 
-```swift
-targets: [
-  .target(
-    name: "YourTarget",
-    dependencies: ["PokemonShakespeareKit"]),
-  )
-  //...
-]
-```
-
-Once that is done, you should be able to use `ShakespearePokemonKit` by only doing:
-
-```swift
-import PokemonShakespeareKit
-
-// Your swift file
-```
+Now, you can use it in your app by simply importing it.
 
 ## Usage
 
 `PokemonShakespeareKit` is very easy to use.
 
-It comes with a struct called `PokemonShakespeareKit`, which encapsulates all the library's operations.  
-The `kit` is using `Combine` to carry out all the relevant operations. Therefore you could need to get familiar with that.
+It comes with a struct called `PokemonShakespeareKit` which encapsulates all the library's operations.  
+The `kit` is using `Combine` to carry out all the relevant operations, you could need to get familiar with that.
 
 To get a reference to the `kit`, you can do:
 
@@ -52,7 +38,7 @@ To get a reference to the `kit`, you can do:
 let kit = PokemonShakespeareKit.live
 ```
 
-The kit offers three different methods. Each method returns a `Publisher`of some kind. And all the methods take the name of a pokemon as a parameter:
+The `kit` offers three different methods. Each method returns a `Publisher`of some kind. And all the methods take the name of a pokemon as a parameter:
 
 ```swift
 
@@ -65,15 +51,15 @@ kit.sprite(for: "Pikachu") // it returns a Publisher<URL?, KitError>
 
 The obtained description are already translated into Shakespeare's language.
 
-As you can see, the errors are all in the `KitError` shape.
+As you can see, the errors are all of the `KitError` type.
 
 ### Combine Publishers Together
 
-A common pattern to use the library could be to combine publishers.  
+A common pattern to use the library is to combine publishers together.  
 The following example allows you to create a composed publisher. 
 
 ```swift
-// Set of cancellables. It is mandatory. Otherwise, the publisher won't publish its values
+// Set of cancellables. It is mandatory, otherwise the publisher won't publish its values
 var cancellables: Set<AnyCancellable> = []
 
 // Starts with the description publisher. Zip the artwork and sprites with it.

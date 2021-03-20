@@ -37,7 +37,7 @@ The app leverages the `PokemonShakespeareKit` to interact with the services to r
 The whole app uses `SwiftUI` as UI framework.
 The logic is implemented using the [Swift Composable Architecture](https://github.com/pointfreeco/swift-composable-architecture) library, developed by `Pointfree.co`.
 
-The pattern is taken from Redux and follows the principles of the Unidirectional data flow.
+The pattern is taken from Redux and follows the principles of the Unidirectional Data Flow.
 
 * There is a unique `State` for the whole application. It keeps track of all the user data.  
 * The state is managed by the `Store` which is the only entity able to modify it.
@@ -70,7 +70,7 @@ The library is tested a lot. It has mainly unit tests, but it also has some inte
 
 While the unit tests use mocks to avoid hitting the real backends, integration tests work with the actual endpoints.
 
-The `funtranslation` server has a rate limit of 5 requests per hour. Therefore, if the tests are run several times in a single hour, they will start failing.
+The `Funtranslation` server has a rate limit of 5 requests per hour. Therefore, if the tests are run several times in a single hour, they will start failing.
 
 In a proper production environment, we would have an API key to overcome this limitation.
 
@@ -78,14 +78,14 @@ In a proper production environment, we would have an API key to overcome this li
 
 This library contains the pokemon specific pieces of the UI.
 
-I decided to separate the UI from the logic: in this way, the `PokemonShakespeareKit` could also be used in mac applications, for example, and it can not depend on UI code.
-Also, in this way, logic and UI are entirely decoupled.
+I decided to separate the UI from the logic: in this way, the `PokemonShakespeareKit` could also be used in Mac applications, for example.  
+The logic and UI are entirely decoupled.
 
 You can find a more detailed description about integrating the library and how to use it in its [readme](./Targets/PokemonShakespeareUI/README.md).
 
-The library uses another dependency to load images from the web. The library is called [Kingfisher](https://github.com/onevcat/Kingfisher), and it is a primary dependency in several swift projects.
+The `PokemonShakespeareUI` library uses another dependency to load images from the web. This dependency is called [Kingfisher](https://github.com/onevcat/Kingfisher), and it is used in several other Swift projects.
 
-The library supports both SwiftUI and UIKit.
+The `PokemonShakespeareUI` library supports both SwiftUI and UIKit.
 
 **Note on tests:**
 

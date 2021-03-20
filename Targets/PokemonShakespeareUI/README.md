@@ -1,7 +1,10 @@
 # PokemonShakespeareUI
 
-This is a package that contains the UI to some components based on some pokemon information.  
-The package has no other logic than UI visualization. You can use whatever content provider you prefer.
+This is a package that lets you display a pokemon on the screen.  
+The package has no other logic than UI visualization. You can use whatever content provider you prefer to retrieve the raw data.  
+With that, you can create the `ViewModel` and pass them to the UI components.
+
+The package supports both `UIKit` and `SwiftUI`.
 
 ## Integration
 
@@ -29,7 +32,7 @@ Now, you can use it in your app by simply importing it.
 The library offers two components: a full-screen component and a table view cell.  
 The components can be used with both `SwiftUI` and `UIKit`.
 
-Each component comes with its own `ViewModel`. The MVVM pattern is enforced within the component, just set the new model, and you are good to go.
+Each component comes with its own `ViewModel`. The MVVM pattern is enforced within the component: just set the new model and you are good to go.
 
 ### FullScreen Component (UIKit)
 
@@ -90,8 +93,7 @@ struct AView: View {
 
 ### Provider
 
-The library also comes with a UI provider that can be used as a single interface to access the components.  
-The provider can be used when you need to retrieve the components, but you don't care about their type.
+The library also comes with a UI provider that can be used as a single interface to access the components.
 
 ```swift
 // Obtain a reference to the provider
